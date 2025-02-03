@@ -1,0 +1,6 @@
+(library
+ (name z)
+ (libraries base zarith)
+ (wrapped false)
+ (preprocess
+  (pps ppx_jane)))

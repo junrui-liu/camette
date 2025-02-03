@@ -1,0 +1,17 @@
+type 'a t
+
+val pp : 'a Fmt.t -> 'a t Fmt.t
+val void : 'a t
+val lift : 'a -> 'a t
+val bind : 'a t -> f:('a -> 'b t) -> 'b t
+val map : 'a t -> f:('a -> 'b) -> 'b t
+val map2 : 'a t -> 'b t -> f:('a -> 'b -> 'c) -> 'c t
+val ( >>= ) : 'a t -> ('a -> 'b t) -> 'b t
+val to_list : 'a t -> 'a list
+val if_ : Solvable.bool -> 'a t -> 'a t -> 'a t
+val ( || ) : 'a t -> 'a t -> 'a t
+val alt : 'a t list -> 'a t
+val choose : 'a list -> 'a t
+val filter : 'a t -> f:('a -> Solvable.bool) -> 'a t
+val reduce : Solvable.bool t -> Solvable.bool
+val bmap : 'a t -> f:('a -> Solvable.bool) -> Solvable.bool

@@ -1,0 +1,11 @@
+(env
+ (dev
+  (flags
+   (:standard -warn-error -A))))
+
+(executable
+ (public_name test)
+ (name test)
+ (libraries base fmt logs logs.fmt z alcotest z3 camette)
+ (preprocess
+  (pps ppx_jane)))

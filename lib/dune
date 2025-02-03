@@ -1,0 +1,5 @@
+(library
+ (name camette)
+ (libraries base fmt logs logs.fmt z alcotest z3)
+ (preprocess
+  (pps ppx_jane)))
