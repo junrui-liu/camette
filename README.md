@@ -7,7 +7,11 @@ Symbolic virtual machine a la [Rosette](https://dl.acm.org/doi/10.1145/2666356.2
 - [x] Solvable types
   - [x] Intrinsic typing via GADTs
   - [x] Booleans
+    - [x] Simple partial evaluation
+    - [ ] Full partial evaluation with a normal form and a mini-SAT solver?
   - [x] Integers
+    - [x] Simple partial evaluation
+    - [ ] Full partial evaluation with a normal form?
   - [ ] Bitvectors
   - [ ] Uninterpreted sorts and functions
     - [ ] How to type this?

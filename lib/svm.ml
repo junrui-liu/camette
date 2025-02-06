@@ -45,6 +45,7 @@ module VM = struct
   exception AssumeFalse
   exception AssertFalse
 
+  (** Note: the client should not modify pre-conditions. Otherwise, we need to modify the VM to implement Rosette 4 (currently we implement Rosette 3 semantics)*)
   let assume = function
     | Const (true, _) -> ()
     | Const (false, _) -> raise AssumeFalse
@@ -52,12 +53,13 @@ module VM = struct
         let vc = S.get () in
         S.put { vc with pre = vc.pre && b }
 
-  let assert_ = function
+  let assert_ ?(guarded = true) = function
     | Const (true, _) -> ()
     | Const (false, _) -> raise AssertFalse
     | b ->
         let vc = S.get () in
-        S.put { vc with post = vc.post && b }
+        S.put
+          { vc with post = (vc.post && if guarded then vc.pre ==> b else b) }
 
   let set_post = function
     | Const (true, _) -> ()
@@ -81,11 +83,11 @@ module VM = struct
              (fun () ->
                assume b;
                t)
-             ~init:vc)
+             ~init:{ pre = vc.pre; post = tt })
         (* unliked Rosette, non-VM exceptions are unhandled, and simply propagated upward *)
       with AssumeFalse | AssertFalse -> None
     in
-    (* run true branch by assuming (not b) *)
+    (* run false branch by assuming (not b) *)
     let o2 =
       try
         Some
@@ -93,20 +95,19 @@ module VM = struct
              (fun () ->
                assume (not b);
                f)
-             ~init:vc)
+             ~init:{ pre = vc.pre; post = tt })
         (* unliked Rosette, non-VM exceptions are unhandled, and simply propagated upward *)
       with AssumeFalse | AssertFalse -> None
     in
-    (* extract post conditions, and default to ff if there was an exception *)
+    (* extract post conditions, and default to (not path cond) if there was an exception *)
     let post1 =
-      Option.(map ~f:(Fn.compose VC.post snd) o1 |> value ~default:ff)
+      Option.(map ~f:(Fn.compose VC.post snd) o1 |> value ~default:(not b))
     in
     let post2 =
-      Option.(map ~f:(Fn.compose VC.post snd) o2 |> value ~default:ff)
+      Option.(map ~f:(Fn.compose VC.post snd) o2 |> value ~default:b)
     in
-    (* Note: partial eval will automatically simplify this.
-       E.g., if post1 is ff, PE will simplify this to (not b) && post 2 *)
-    set_post ((b && post1) || ((not b) && post2))
+    assert_ ~guarded:false post1;
+    assert_ ~guarded:false post2
 
   let bool' () = GenSymbolic.next Ty.Bool
   let z' () = GenSymbolic.next Ty.Z
